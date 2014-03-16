@@ -6,7 +6,7 @@ import (
 	"github.com/s-urbaniak/mergesort"
 )
 
-func ParallelMergeSort(A []int) mergesort.MergeResult {
+func ParallelMergeSort(A []uint64) mergesort.MergeResult {
 	np := runtime.NumCPU()
 	lenA := len(A)
 
@@ -33,7 +33,7 @@ func ParallelMergeSort(A []int) mergesort.MergeResult {
 		<-ready
 	}
 
-	merged := mergesort.MergeResult{0, make([]int, 0)}
+	merged := mergesort.MergeResult{0, make([]uint64, 0)}
 	for i := range presult {
 		merged = mergesort.Merge(merged.A, presult[i].A, merged.Inv+presult[i].Inv)
 	}
