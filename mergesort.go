@@ -1,12 +1,12 @@
 package mergesort
 
 type MergeResult struct {
-	Inv uint64
-	A   []int
+	Inv int64
+	A   []int64
 }
 
-func Merge(A, B []int, Inv uint64) MergeResult {
-	C := make([]int, 0, len(A)+len(B))
+func Merge(A, B []int64, inv int64) ([]int64, int64) {
+	C := make([]int64, 0, len(A)+len(B))
 	i, j := 0, 0
 
 	for (i < len(A)) && (j < len(B)) {
@@ -16,24 +16,23 @@ func Merge(A, B []int, Inv uint64) MergeResult {
 		} else {
 			C = append(C, B[j])
 			j++
-			Inv += uint64(len(A)) - uint64(i)
+			inv += int64(len(A)) - int64(i)
 		}
 	}
 
 	C = append(C, A[i:]...)
 	C = append(C, B[j:]...)
 
-	r := MergeResult{Inv, C}
-	return r
+	return C, inv
 }
 
-func MergeSort(A []int) MergeResult {
+func MergeSort(A []int64) ([]int64, int64) {
 	if len(A) == 1 {
-		return MergeResult{0, A}
+		return A, 0
 	} else {
 		m := len(A) / 2
-		l := MergeSort(A[:m])
-		r := MergeSort(A[m:])
-		return Merge(l.A, r.A, r.Inv+l.Inv)
+		l, lInv := MergeSort(A[:m])
+		r, rInv := MergeSort(A[m:])
+		return Merge(l, r, rInv+lInv)
 	}
 }

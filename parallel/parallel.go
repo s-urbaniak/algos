@@ -6,7 +6,12 @@ import (
 	"github.com/s-urbaniak/mergesort"
 )
 
-func ParallelMergeSort(A []int) mergesort.MergeResult {
+type mergeResult struct {
+	A   []int64
+	Inv int64
+}
+
+func ParallelMergeSort(A []int64) ([]int64, int64) {
 	np := runtime.NumCPU()
 	lenA := len(A)
 
@@ -17,14 +22,15 @@ func ParallelMergeSort(A []int) mergesort.MergeResult {
 	slice_size := lenA / np
 	rem := lenA % np
 
-	presult := make([]mergesort.MergeResult, np)
+	presult := make([]mergeResult, np)
 	ready := make(chan bool)
 	for i := 0; i < np; i++ {
 		x := i * slice_size
 		y := (i+1)*slice_size + rem
 
 		go func(i int) {
-			presult[i] = mergesort.MergeSort(A[x:y])
+			A, inv := mergesort.MergeSort(A[x:y])
+			presult[i] = mergeResult{A, inv}
 			ready <- true
 		}(i)
 	}
@@ -33,10 +39,11 @@ func ParallelMergeSort(A []int) mergesort.MergeResult {
 		<-ready
 	}
 
-	merged := mergesort.MergeResult{0, make([]int, 0)}
+	merged := mergeResult{make([]int64, 0), 0}
 	for i := range presult {
-		merged = mergesort.Merge(merged.A, presult[i].A, merged.Inv+presult[i].Inv)
+		A, inv := mergesort.Merge(merged.A, presult[i].A, merged.Inv+presult[i].Inv)
+		merged = mergeResult{A, inv}
 	}
 
-	return merged
+	return merged.A, merged.Inv
 }
