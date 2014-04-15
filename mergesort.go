@@ -1,10 +1,5 @@
 package mergesort
 
-type MergeResult struct {
-	Inv int64
-	A   []int64
-}
-
 func Merge(A, B []int64, inv int64) ([]int64, int64) {
 	C := make([]int64, 0, len(A)+len(B))
 	i, j := 0, 0
