@@ -24,10 +24,11 @@ func Merge(A, B []int64, inv int64) ([]int64, int64) {
 func MergeSort(A []int64) ([]int64, int64) {
 	if len(A) == 1 {
 		return A, 0
-	} else {
-		m := len(A) / 2
-		l, lInv := MergeSort(A[:m])
-		r, rInv := MergeSort(A[m:])
-		return Merge(l, r, rInv+lInv)
 	}
+
+	m := len(A) / 2
+	l, lInv := MergeSort(A[:m])
+	r, rInv := MergeSort(A[m:])
+
+	return Merge(l, r, rInv+lInv)
 }

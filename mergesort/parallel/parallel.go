@@ -3,7 +3,7 @@ package parallel
 import (
 	"runtime"
 
-	"github.com/s-urbaniak/mergesort"
+	"github.com/s-urbaniak/algos/mergesort"
 )
 
 type mergeResult struct {
