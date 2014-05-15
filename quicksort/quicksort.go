@@ -6,7 +6,7 @@ type Strategy func([]int64) int
 // Partition partitions a given []int64 slice between the indices x, y around the
 // pivot index p
 func Partition(A []int64, p int) int {
-	// swap x <-> p
+	// swap first element with pivot
 	A[0], A[p] = A[p], A[0]
 
 	pv := A[0]
@@ -20,7 +20,7 @@ func Partition(A []int64, p int) int {
 		}
 	}
 
-	// swap x <-> i
+	// swap first element with i'th order statistic (pivot index)
 	A[0], A[i] = A[i], A[0]
 
 	return i
