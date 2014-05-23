@@ -86,6 +86,7 @@ func (g Graph) WriteDot(w io.Writer) error {
 
 func (source *Graph) MinCut(iterations int) int {
 	min := source.EdgeCount()
+	mins := make(chan (int))
 
 	for i := 0; i < iterations; i++ {
 		edgeCopy := make([]Edge, len(source.edge))
@@ -93,14 +94,21 @@ func (source *Graph) MinCut(iterations int) int {
 		copy(edgeCopy, source.edge)
 		copy(vertexCopy, source.vertex)
 
-		g := NewGraph(vertexCopy, edgeCopy)
+		go func(mins chan int, vertex []Vertex, edge []Edge) {
+			g := NewGraph(vertexCopy, edgeCopy)
 
-		for g.VertexCount() > 2 {
-			g.Contract(g.RandomEdge())
-		}
+			for g.VertexCount() > 2 {
+				g.Contract(g.RandomEdge())
+			}
 
-		if g.EdgeCount() < min {
-			min = g.EdgeCount()
+			mins <- g.EdgeCount()
+		}(mins, vertexCopy, edgeCopy)
+	}
+
+	for i := 0; i < iterations; i++ {
+		m := <-mins
+		if m < min {
+			min = m
 		}
 	}
 
@@ -114,7 +122,8 @@ func (g *Graph) RandomEdge() int {
 }
 
 // EdgeIndex returns the edge index of the given edge number e, where e <
-// g.EdgeCount(). If e >= g.EdgeCount() this method will panic
+// g.EdgeCount(). If e >= g.EdgeCount() this method will panic.
+// Note: this method runs in O(n)!
 func (g Graph) EdgeIndex(e int) int {
 	i, ei := 0, -1
 
@@ -125,7 +134,7 @@ func (g Graph) EdgeIndex(e int) int {
 		i++
 	}
 
-	return i-1
+	return i - 1
 }
 
 // Contract contracts the graph at edge index e and modifies it accordingly.
@@ -187,7 +196,7 @@ func (g *Graph) Contract(e int) {
 
 	// u becomes the contracted vertex
 	g.vertex[ui] = Vertex{w, u.label}
-	g.vertex[vi] = Vertex{nil, ""}
+	g.vertex[vi] = Vertex{nil, v.label}
 	g.vertexCount--
 }
 
