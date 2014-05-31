@@ -98,7 +98,7 @@ func (g Graph) dfsLoop(u updater) {
 	}
 }
 
-func (g Graph) dfs(i, s, time int, explored []bool,	u updater) int {
+func (g Graph) dfs(i, s, time int, explored []bool, u updater) int {
 	explored[i] = true
 
 	u.leader(i, s)
