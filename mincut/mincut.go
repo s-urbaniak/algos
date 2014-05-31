@@ -1,14 +1,11 @@
 package mincut
 
-import (
-	"fmt"
-	"io"
-	"math/rand"
-)
+import "math/rand"
 
 // An edge is represented as tuple of adjacent vertices. The entries U, V point to vertex entries in Graph.V. The following variant must be maintained: u < v (thus also u != v).
 type Edge struct {
-	u, v int
+	u, v    int
+	deleted bool
 }
 
 // A vertex is represented as a sorted list of adjacent edges. Each entry points to an edge entry in Graph.E.
@@ -28,20 +25,65 @@ type Graph struct {
 	edgeCount   int
 }
 
-func NewGraph(vertex []Vertex, edge []Edge) *Graph {
-	return &Graph{vertex, edge, len(vertex), len(edge)}
-}
-
 func NewEdge(u, v int) Edge {
 	if u > v {
-		return Edge{v, u}
+		return Edge{v, u, false}
 	}
 
-	return Edge{u, v}
+	return Edge{u, v, false}
+}
+
+// Swap swaps a source vertex index with the target vertex index and returns a new
+// Edge. If the source vertex index is not present in the edge this method will
+// panic.
+func (e Edge) Swap(source, target int) Edge {
+	if e.v == source {
+		return NewEdge(target, e.u)
+	}
+
+	if e.u == source {
+		return NewEdge(target, e.v)
+	}
+
+	panic("source vertex not present in edge")
+}
+
+func (e Edge) IsDeleted() bool {
+	return e.deleted
+}
+
+func (e *Edge) Delete() {
+	e.deleted = true
 }
 
 func NewVertex(label string) Vertex {
 	return Vertex{make([]int, 0), label}
+}
+
+// AddEdges adds edge indices to the vertex's list of adjacent edges maintaining
+// the invariant of a sorted list and returns the newly constructed vertex.
+func (v Vertex) AddEdges(e ...int) Vertex {
+	i, j := 0, 0
+	w := make([]int, 0, len(v.adj)+len(e))
+
+	for (i < len(v.adj)) && (j < len(e)) {
+		if v.adj[i] < e[j] {
+			w = append(w, v.adj[i])
+			i++
+		} else {
+			w = append(w, e[j])
+			j++
+		}
+	}
+
+	w = append(w, v.adj[i:]...)
+	w = append(w, e[j:]...)
+
+	return Vertex{w, v.label}
+}
+
+func NewGraph(vertex []Vertex, edge []Edge) *Graph {
+	return &Graph{vertex, edge, len(vertex), len(edge)}
 }
 
 func (g Graph) VertexCount() int {
@@ -56,55 +98,28 @@ func (g Graph) GetEdge(e int) Edge {
 	return g.edge[e]
 }
 
-func (e Edge) IsDeleted() bool {
-	return e.u == -1
-}
-
-func (g Graph) WriteDot(w io.Writer) error {
-	_, err := io.WriteString(w, "graph G {\n")
-	if err != nil {
-		return err
-	}
-
-	for i, e := range g.edge {
-		if !e.IsDeleted() {
-			line := fmt.Sprintf("\t%s -- %s // e=%d\n", g.vertex[e.u].label, g.vertex[e.v].label, i)
-			_, err := io.WriteString(w, line)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	_, err = io.WriteString(w, "}\n")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (source *Graph) MinCut(iterations int) int {
-	min := source.EdgeCount()
+// MinCut returns the minimun cut of the graph using Karger's algorithm.
+func (g Graph) MinCut(iterations int) int {
 	mins := make(chan (int))
 
 	for i := 0; i < iterations; i++ {
-		edgeCopy := make([]Edge, len(source.edge))
-		vertexCopy := make([]Vertex, len(source.vertex))
-		copy(edgeCopy, source.edge)
-		copy(vertexCopy, source.vertex)
+		edgeCopy := make([]Edge, len(g.edge))
+		vertexCopy := make([]Vertex, len(g.vertex))
+		copy(edgeCopy, g.edge)
+		copy(vertexCopy, g.vertex)
 
 		go func(mins chan int, vertex []Vertex, edge []Edge) {
-			g := NewGraph(vertexCopy, edgeCopy)
+			gcopy := NewGraph(vertexCopy, edgeCopy)
 
-			for g.VertexCount() > 2 {
-				g.Contract(g.RandomEdge())
+			for gcopy.VertexCount() > 2 {
+				gcopy.Contract(gcopy.RandomEdge())
 			}
 
-			mins <- g.EdgeCount()
+			mins <- gcopy.EdgeCount()
 		}(mins, vertexCopy, edgeCopy)
 	}
 
+	min := g.EdgeCount()
 	for i := 0; i < iterations; i++ {
 		m := <-mins
 		if m < min {
@@ -117,8 +132,7 @@ func (source *Graph) MinCut(iterations int) int {
 
 // Random returns a random edge index.
 func (g *Graph) RandomEdge() int {
-	e := rand.Intn(g.EdgeCount())
-	return g.EdgeIndex(e)
+	return rand.Intn(g.EdgeCount())
 }
 
 // EdgeIndex returns the edge index of the given edge number e, where e <
@@ -155,6 +169,7 @@ func (g Graph) EdgeIndex(e int) int {
 // For case 3. the adjacent duplicate edge of u, v is being deleted.
 func (g *Graph) Contract(e int) {
 	i, j := 0, 0
+	e = g.EdgeIndex(e)
 
 	// ui, vi are te
 	ui, vi := g.edge[e].u, g.edge[e].v
@@ -178,7 +193,7 @@ func (g *Graph) Contract(e int) {
 		} else {
 			// self-loop, u and v point to the same edge
 			loop := u.adj[i]
-			g.edge[loop] = Edge{-1, -1}
+			g.edge[loop].Delete()
 			g.edgeCount--
 			i++
 			j++
@@ -198,41 +213,4 @@ func (g *Graph) Contract(e int) {
 	g.vertex[ui] = Vertex{w, u.label}
 	g.vertex[vi] = Vertex{nil, v.label}
 	g.vertexCount--
-}
-
-// AddEdges adds edge indices to the vertex's list of edges maintaining the
-// invariant of a sorted list and returns the newly constructed vertex.
-func (v Vertex) AddEdges(e ...int) Vertex {
-	i, j := 0, 0
-	w := make([]int, 0, len(v.adj)+len(e))
-
-	for (i < len(v.adj)) && (j < len(e)) {
-		if v.adj[i] < e[j] {
-			w = append(w, v.adj[i])
-			i++
-		} else {
-			w = append(w, e[j])
-			j++
-		}
-	}
-
-	w = append(w, v.adj[i:]...)
-	w = append(w, e[j:]...)
-
-	return Vertex{w, v.label}
-}
-
-// Swap swaps a source vertex index with the target vertex index and returns a new
-// Edge. If the source vertex index is not present in the edge this method will
-// panic.
-func (e Edge) Swap(source, target int) Edge {
-	if e.v == source {
-		return NewEdge(target, e.u)
-	}
-
-	if e.u == source {
-		return NewEdge(target, e.v)
-	}
-
-	panic("source vertex not present in edge")
 }
