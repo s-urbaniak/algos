@@ -24,11 +24,8 @@ type updater interface {
 	// determined for vertex v
 	leader(v, l int)
 
-	// neighbour is a function that returns true if there is a directed
-	// neighbour from vertex u to vertex v and it returns the neighbour v.
-
 	// neighbour must return the index of the neighbour of vertex v else false
-	neighbour(v int, e Edge) (bool, int)
+	neighbour(u int, e Edge) (v int, ok bool)
 
 	// returns the labels (vertex indices) over which the SCC algorithm iterates
 	getLabels() []int
@@ -106,7 +103,7 @@ func (g Graph) dfs(i, s, time int, explored []bool,	u updater) int {
 
 	u.leader(i, s)
 	for _, e := range g.vertex[i].adj {
-		if ok, j := u.neighbour(i, g.edge[e]); ok && !explored[j] {
+		if j, ok := u.neighbour(i, g.edge[e]); ok && !explored[j] {
 			time = g.dfs(j, s, time, explored, u)
 		}
 	}

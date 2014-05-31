@@ -17,12 +17,12 @@ func (s secondPass) getLabels() []int {
 
 func (_ secondPass) time(int, int) {}
 
-func (s secondPass) neighbour(v int, e Edge) (ok bool, v int) {
-	if v == e.v {
-		return true, e.u
+func (s secondPass) neighbour(u int, e Edge) (v int, ok bool) {
+	if u == e.v {
+		return e.u, true
 	}
 
-	return false, -1
+	return -1, false
 }
 
 func (sp secondPass) leader(_, s int) {

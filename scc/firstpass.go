@@ -28,12 +28,12 @@ func (f firstPass) time(v, t int) {
 	f.times[len(f.times)-t] = v
 }
 
-func (f firstPass) neighbour(v int, e Edge) (ok bool, v int) {
-	if v == e.u {
-		return true, e.v
+func (f firstPass) neighbour(u int, e Edge) (v int, ok bool) {
+	if u == e.u {
+		return e.v, true
 	}
 
-	return false, -1
+	return -1, false
 }
 
 func (_ firstPass) leader(int, int) {}
