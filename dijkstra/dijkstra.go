@@ -13,14 +13,14 @@ type Edge struct {
 }
 
 type Vertex struct {
-	i     int
+	vPos  int
 	adj   []int
 	label string
 	dist  uint
 
 	// heap invariants
-	key uint
-	pos int
+	key  uint
+	hPos int
 }
 
 type Graph struct {
@@ -57,7 +57,7 @@ func NewGraph(V []Vertex, s int, E []Edge) (*Graph, error) {
 	H := make([]*Vertex, len(V))
 	for i, _ := range H {
 		// initialize heap invariants
-		V[i].pos = i
+		V[i].hPos = i
 		V[i].key = inf
 		V[i].dist = inf
 		H[i] = &V[i]
@@ -72,7 +72,7 @@ func NewGraph(V []Vertex, s int, E []Edge) (*Graph, error) {
 	}
 
 	// remove source vertex s
-	V[s].pos = -1
+	V[s].hPos = -1
 	V[s].dist = 0
 	H = append(H[:s], H[s+1:]...)
 
@@ -90,9 +90,9 @@ func (g Graph) DoShortestPath() {
 			u := &g.vertex[edge.u]
 			v := &g.vertex[edge.v]
 
-			if (u.i == w.i) && (v.pos >= 0) {
+			if (u.vPos == w.vPos) && (v.hPos >= 0) {
 				v.key = min(v.key, w.key+edge.len)
-				heap.Fix(&g.heap, v.pos)
+				heap.Fix(&g.heap, v.hPos)
 			}
 		}
 	}
@@ -115,8 +115,8 @@ func (h VertexHeap) Less(i, j int) bool {
 }
 
 func (h VertexHeap) Swap(i, j int) {
-	h.heap[i].pos = j
-	h.heap[j].pos = i
+	h.heap[i].hPos = j
+	h.heap[j].hPos = i
 	h.heap[i], h.heap[j] = h.heap[j], h.heap[i]
 }
 
@@ -124,11 +124,11 @@ func (h *VertexHeap) Pop() interface{} {
 	old := h.heap
 	n := len(old)
 	x := old[n-1]
-	x.pos = -1
+	x.hPos = -1
 	h.heap = old[0 : n-1]
 
 	for i, entry := range h.heap {
-		entry.pos = i
+		entry.hPos = i
 	}
 
 	return x
@@ -136,6 +136,6 @@ func (h *VertexHeap) Pop() interface{} {
 
 func (h *VertexHeap) Push(x interface{}) {
 	he := x.(*Vertex)
-	he.pos = len(h.heap)
+	he.hPos = len(h.heap)
 	h.heap = append(h.heap, he)
 }
