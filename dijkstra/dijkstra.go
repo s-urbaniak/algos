@@ -126,7 +126,6 @@ func (h *VertexHeap) Pop() interface{} {
 	old := h.heap
 	n := len(old)
 	x := old[n-1]
-
 	x.pos = -1
 	h.heap = old[0 : n-1]
 
