@@ -13,14 +13,14 @@ type Edge struct {
 }
 
 type Vertex struct {
-	i      int
-	adj    []int
-	label  string
-	dist   uint
+	i     int
+	adj   []int
+	label string
+	dist  uint
 
 	// heap invariants
-	key    uint
-	pos    int
+	key uint
+	pos int
 }
 
 type Graph struct {
@@ -30,7 +30,7 @@ type Graph struct {
 }
 
 type VertexHeap struct {
-	heap   []*Vertex
+	heap []*Vertex
 }
 
 func NewVertex(i int, label string, edges ...int) Vertex {
@@ -82,18 +82,16 @@ func NewGraph(V []Vertex, s int, E []Edge) (*Graph, error) {
 func (g Graph) DoShortestPath() {
 	heap.Init(&g.heap)
 	for g.heap.Len() > 0 {
-		wStar := heap.Pop(&g.heap).(*Vertex)
-		wStar.dist = wStar.key
+		w := heap.Pop(&g.heap).(*Vertex)
+		w.dist = w.key
 
-		for _, i := range wStar.adj {
+		for _, i := range w.adj {
 			edge := g.edge[i]
-			u := edge.u
+			u := &g.vertex[edge.u]
 			v := &g.vertex[edge.v]
 
-			if (u == wStar.i) && (v.pos >= 0) {
-				v.key = min(
-					v.key,
-					wStar.key+edge.len)
+			if (u.i == w.i) && (v.pos >= 0) {
+				v.key = min(v.key, w.key+edge.len)
 				heap.Fix(&g.heap, v.pos)
 			}
 		}
