@@ -2,6 +2,9 @@ package scc
 
 type firstPass struct {
 	labels []int
+
+	// insert discovery time of vertex v in reverse order, i.e
+	// time(0) = 4 becomes times[len(times)-4] = 0
 	times  []int
 }
 
@@ -23,8 +26,6 @@ func (f firstPass) getTimes() []int {
 }
 
 func (f firstPass) time(v, t int) {
-	// insert discovery time of vertex v in reverse order, i.e
-	// time(0) = 4 becomes f.times[len(f.times)-4] = 0
 	f.times[len(f.times)-t] = v
 }
 

@@ -75,10 +75,6 @@ func NewEdge(u, v int) *Edge {
 	return &Edge{u, v}
 }
 
-func (e Edge) IsDeleted() bool {
-	return false
-}
-
 func (e Edge) GetU() int {
 	return e.u
 }
