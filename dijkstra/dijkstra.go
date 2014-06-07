@@ -115,8 +115,7 @@ func (h VertexHeap) Less(i, j int) bool {
 }
 
 func (h VertexHeap) Swap(i, j int) {
-	h.heap[i].hPos = j
-	h.heap[j].hPos = i
+	h.heap[i].hPos, h.heap[j].hPos = j, i
 	h.heap[i], h.heap[j] = h.heap[j], h.heap[i]
 }
 
