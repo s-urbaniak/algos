@@ -111,10 +111,10 @@ func (g Graph) dfs(i, s, time int, explored []bool, u updater) int {
 
 func (g Graph) Scc() []int {
 	fp := newFirstPass(g)
-	g.dfsLoop(fp)
+	g.dfsLoop(&fp)
 
 	sp := newSecondPass(g, fp.getTimes())
-	g.dfsLoop(sp)
+	g.dfsLoop(&sp)
 
 	return sp.TopFiveScc()
 }

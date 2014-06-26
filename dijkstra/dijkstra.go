@@ -19,8 +19,8 @@ type Vertex struct {
 	dist  uint
 
 	// heap invariants
-	key  uint
-	hPos int
+	key  uint // the key value in the heap
+	hPos int // the position in the heap
 }
 
 type Graph struct {

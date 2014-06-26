@@ -15,9 +15,9 @@ func (s secondPass) getLabels() []int {
 	return s.labels
 }
 
-func (_ secondPass) time(int, int) {}
+func (_ *secondPass) time(int, int) {}
 
-func (s secondPass) neighbour(u int, e Edge) (v int, ok bool) {
+func (s *secondPass) neighbour(u int, e Edge) (v int, ok bool) {
 	if u == e.v {
 		return e.u, true
 	}
@@ -25,7 +25,7 @@ func (s secondPass) neighbour(u int, e Edge) (v int, ok bool) {
 	return -1, false
 }
 
-func (sp secondPass) leader(_, s int) {
+func (sp *secondPass) leader(_, s int) {
 	sp.leaders[s] = sp.leaders[s] + 1
 }
 

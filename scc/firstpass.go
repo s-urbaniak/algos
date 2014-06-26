@@ -25,11 +25,11 @@ func (f firstPass) getTimes() []int {
 	return f.times
 }
 
-func (f firstPass) time(v, t int) {
+func (f *firstPass) time(v, t int) {
 	f.times[len(f.times)-t] = v
 }
 
-func (f firstPass) neighbour(u int, e Edge) (v int, ok bool) {
+func (f *firstPass) neighbour(u int, e Edge) (v int, ok bool) {
 	if u == e.u {
 		return e.v, true
 	}
@@ -37,4 +37,4 @@ func (f firstPass) neighbour(u int, e Edge) (v int, ok bool) {
 	return -1, false
 }
 
-func (_ firstPass) leader(int, int) {}
+func (_ *firstPass) leader(int, int) {}
