@@ -50,5 +50,5 @@ func queens(m int) [][]int {
 }
 
 func main() {
-	fmt.Println("8 queens problem using the 'lists of successes' method\n", queens(8))
+	fmt.Println(queens(8))
 }
