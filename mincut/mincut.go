@@ -109,7 +109,7 @@ func (g Graph) MinCut(iterations int) int {
 		copy(vertexCopy, g.vertex)
 
 		go func(mins chan int, vertex []Vertex, edge []Edge) {
-			gcopy := NewGraph(vertexCopy, edgeCopy)
+			gcopy := NewGraph(vertex, edge)
 
 			for gcopy.VertexCount() > 2 {
 				gcopy.Contract(gcopy.RandomEdge())
